@@ -24,6 +24,53 @@
         }
     };
 //-------------------------------------------------------------
+// 15. 3 Sum
+    // return array of triplets == 0. all must be distinct triplet values (with different idx)
+    // O(n^2) time
+    // O(logn) || O(n) space depending sort space
+
+    class Solution {
+    public:
+        vector<vector<int>> threeSum(vector<int>& nums) {
+            vector<vector<int>> answer;
+            
+            if (nums.size() < 3)
+                return answer;
+            
+            sort(nums.begin(), nums.end());
+            
+            int size = nums.size(); 
+            
+            for (int i = 0; i < size - 2; i++)
+            {
+                if (nums[i] > 0) break;
+                if (i > 0 && nums[i] == nums[i - 1]) continue;
+                
+                int second = i + 1, third = size - 1;
+                
+                while (second < third)
+                {
+                    int currSum = nums[i] + nums[second] + nums[third];
+                    
+                    if (currSum < 0)
+                        second++;
+                    else if (currSum > 0)
+                        third--;
+                    else
+                    {
+                        answer.push_back({nums[i], nums[second], nums[third]});
+                        
+                        int currSecond = nums[second], currThird = nums[third];
+                    
+                        while (second < third && nums[second] == currSecond) second++;
+                        while (second < third && nums[third] == currThird) third--;
+                    }
+                }
+            }
+            return answer;    
+        }
+    };
+//-------------------------------------------------------------
 // 20. Valid Parentheses
     // O(n) time, O(n) space
 
@@ -228,8 +275,54 @@
     };
 //-------------------------------------------------------------
 //-------------------------------------------------------------
+// 125. Valid Palindrome
+    // ignore spaces, non alphanumeric chars. allow mixed case
+    // O(n) time, O(1) space
+
+    class Solution {
+    public:
+        bool isPalindrome(string s) {
+            int start = 0, end = s.size() - 1;
+            
+            while (start < end)
+            {
+                if (!isalnum(s[start]))                             // int isalnum(c char) checks if alphanumeric
+                    start++;
+                else if (!isalnum(s[end]))                          // int isdigit(c char), int isalpha(c char) also exist
+                    end--;     
+                else if (tolower(s[start]) != tolower(s[end]))
+                    return false;
+                else 
+                {
+                    start++; 
+                    end--;
+                }
+            }
+            return true;
+        }
+    };
 //-------------------------------------------------------------
 //-------------------------------------------------------------
+// 141. Linked List Cycle
+    // O(n) time, O(1) space
+
+    class Solution {
+    public:
+        bool hasCycle(ListNode *head) {
+            if (!head) 
+                return false;
+            
+            ListNode *fast = head, *slow = head;
+            
+            while (fast && fast -> next)
+            {
+                fast = fast -> next -> next;
+                slow = slow -> next;
+                if (fast == slow) return true;
+            }
+            return false; 
+        }
+    };
 //-------------------------------------------------------------
 //-------------------------------------------------------------
 //-------------------------------------------------------------
@@ -262,6 +355,24 @@
         }
     };
 //-------------------------------------------------------------
+// 217. Contains Duplicate
+    // if has duplicate, return true. else false
+    // O(n) time, O(n) space
+
+    class Solution {
+    public:
+        bool containsDuplicate(vector<int>& nums) {
+            unordered_set<int> uSet;
+            
+            for (int i = 0; i < nums.size(); i++) {
+                uSet.insert(nums[i]);
+                
+                if (uSet.size() != i + 1) 
+                    return true;
+            }
+            return false;
+        }
+    };
 //-------------------------------------------------------------
 // 226. Invert Binary Tree
     // O(n) time, O(height) space
@@ -322,6 +433,97 @@
         }
     };
 //-------------------------------------------------------------
+// 235. Lowest Common Ancestor of a Binary Search Tree
+    // O(n) time worst case.. O(h) time average, O(1) space
+
+    struct TreeNode {
+        int val;
+        TreeNode *left;
+        TreeNode *right;
+        
+        TreeNode(int x) : val(x), left(NULL), right(NULL) {}
+    };
+
+    class Solution {
+    public:
+        TreeNode* lowestCommonAncestor(TreeNode* root, TreeNode* p, TreeNode* q) {
+            while (root)
+            {
+                if (p -> val < root -> val && q -> val < root -> val)
+                    root = root -> left;
+                else if (p -> val > root -> val && q -> val > root -> val)
+                    root = root -> right;
+                else
+                    return root;
+            }
+            return root;    
+        }
+    };
+//-------------------------------------------------------------
+//-------------------------------------------------------------
+// 242. Valid Anagram
+    // given two strings (lowercase char only) determine if anagram
+    // O(n) time, O(1) space
+
+    class Solution {
+    public:
+        bool isAnagram(string s, string t) {
+            if (s.size() != t.size()) return false;
+            
+            int arr[26] = {};
+
+            for (auto c:s)
+            {
+                arr[int(c) - 97]++;
+            }
+            
+            for (auto c:t)
+            {
+                if (arr[int(c)-97] == 0) return false;
+                arr[int(c)-97]--;
+            }
+            return true;
+        }
+    };
+//-------------------------------------------------------------
+//-------------------------------------------------------------
+//-------------------------------------------------------------
+// 252. Meeting Rooms
+    // O(nlogn) time, O(1) space
+
+    class Solution {
+    public:
+        bool canAttendMeetings(vector<vector<int>>& intervals) {
+            sort(intervals.begin(), intervals.end());
+            
+            for (int i = 1; i < intervals.size(); i++)
+            {
+                if (intervals[i][0] < intervals[i-1][1]) 
+                    return false;    
+            }
+            return true;  
+        }
+    };
+//-------------------------------------------------------------
+//-------------------------------------------------------------
+//-------------------------------------------------------------
+// 268. Missing Number
+    // O(n) time, O(1) space 
+
+    class Solution {
+    public:
+        int missingNumber(vector<int>& nums) {
+            int sum = 0, size = nums.size();
+
+            for (auto num:nums)
+            {
+                sum += num;
+            }
+            return (size * (size + 1)/2) - sum;   
+
+            // return (size * (size + 1)/2) - accumulate(nums.begin(), nums.end(), 0);          // .accumulate()
+        }                                                                                       // int product = accumulate(v.begin(), v.end(), 1, std::multiplies<int>());
+    };
 //-------------------------------------------------------------
 //-------------------------------------------------------------
 //-------------------------------------------------------------
@@ -339,14 +541,49 @@
 //-------------------------------------------------------------
 //-------------------------------------------------------------
 //-------------------------------------------------------------
-//-------------------------------------------------------------
-//-------------------------------------------------------------
-//-------------------------------------------------------------
-//-------------------------------------------------------------
-//-------------------------------------------------------------
-//-------------------------------------------------------------
-//-------------------------------------------------------------
-//-------------------------------------------------------------
+// 572. Subtree of Another Tree
+    // O(n*m) time. average O(nlogm) ?      // for each of n nodes, there is max m computations
+    // O(logn + logm) space ?               // height of each tree together
+
+    struct TreeNode {
+        int val;
+        TreeNode *left;
+        TreeNode *right;
+        
+        TreeNode() : val(0), left(nullptr), right(nullptr) {}
+        TreeNode(int x) : val(x), left(nullptr), right(nullptr) {}
+        TreeNode(int x, TreeNode *left, TreeNode *right) : val(x), left(left), right(right) {}
+    };
+
+    class Solution {
+    public:
+        bool isSameTree(TreeNode* a, TreeNode* b)
+        {
+            if (!a || !b) return a == b;
+            if (a -> val != b -> val) return false;
+            return isSameTree(a -> left, b -> left) && isSameTree(a -> right, b -> right);
+        }
+        
+        bool isSubtree(TreeNode* root, TreeNode* subRoot) {
+            stack<TreeNode*> st;
+            st.push(root);
+            
+            while (st.size())
+            {
+                TreeNode *currNode = st.top();
+                st.pop();
+                
+                if (currNode -> val == subRoot -> val && isSameTree(currNode, subRoot))
+                    return true;
+            
+                if (currNode -> left)
+                    st.push(currNode -> left);
+                if (currNode -> right)
+                    st.push(currNode -> right);
+            }
+            return false;
+        }
+    };
 //-------------------------------------------------------------
 //-------------------------------------------------------------
 //-------------------------------------------------------------

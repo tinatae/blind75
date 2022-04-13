@@ -24,6 +24,63 @@
         }
     };
 //-------------------------------------------------------------
+// 3. Longest Substring Without Repeating Characters
+    // substring must be continuous
+    // O(n) time, O(size uSet) space
+
+    class Solution {
+    public:
+        int lengthOfLongestSubstring(string s) { 
+            int size = s.size();
+            if (size < 2) return size;
+
+            unordered_set<char> uSet;
+            
+            int start = 0, end = 0, longest = 0;
+            
+            while (end < size) 
+            {
+                char currChar = s[end];
+                
+                if (uSet.find(currChar) == uSet.end())
+                {
+                    uSet.insert(currChar);
+                    longest = max((int) uSet.size(), longest);      // .size() => size_type?
+                    end++;
+                }
+                else
+                {
+                    uSet.erase(s[start]);
+                    start++;
+                }
+            }
+            return longest;  
+        }
+    };
+//-------------------------------------------------------------
+// 11. Container With Most Water
+    // O(n) time, O(1) space
+
+    class Solution {
+    public:
+        int maxArea(vector<int>& height) {
+            int left = 0, right = height.size() - 1, maxArea = INT_MIN;
+            
+            while (left < right)
+            {
+                int leftHeight = height[left], rightHeight = height[right],
+                    currArea = min(leftHeight, rightHeight) * (right - left);
+                
+                maxArea = max(maxArea, currArea);
+                
+                if (leftHeight < rightHeight)
+                    left++;
+                else
+                    right--;
+            }
+            return maxArea;
+        }
+    };
 //-------------------------------------------------------------
 // 15. 3 Sum
     // return array of triplets == 0. all must be distinct triplet values (with different idx)
@@ -163,6 +220,41 @@
                 return list2; 
             }
         }      
+    };
+//-------------------------------------------------------------
+// 33. Search in a Rotated Sorted Array
+    // O(logn) time, O(1) space
+    
+    class Solution {
+    public:
+        int search(vector<int>& nums, int target) {
+            int startIdx = 0, endIdx = nums.size() - 1;
+            
+            while (startIdx <= endIdx)
+            {
+                int midIdx = (startIdx + endIdx)/2, midVal = nums[midIdx],
+                    startVal = nums[startIdx], endVal = nums[endIdx];
+                
+                if (target == midVal)
+                    return midIdx;
+                
+                if (startVal <= midVal)
+                {
+                    if (startVal <= target && target < midVal)
+                        endIdx = midIdx - 1;
+                    else
+                        startIdx = midIdx + 1;   
+                }
+                else
+                {
+                    if (midVal < target && target <= endVal)
+                        startIdx = midIdx + 1;
+                    else
+                        endIdx = midIdx - 1;
+                }
+            }
+            return -1;  
+        }
     };
 //-------------------------------------------------------------
 // 39. Combination Sum
@@ -361,6 +453,41 @@
         }
     };
 //-------------------------------------------------------------
+// 102. Binary Tree Level Order Traversal
+    // O(n) time, O(n) space
+    class Solution {
+    public:
+        vector<vector<int>> levelOrder(TreeNode* root) {
+            if (!root) 
+                return {};
+            
+            vector<vector<int>> ordered;
+            queue<TreeNode*> q;
+            
+            q.push(root);
+            
+            while (q.size())
+            {
+                int length = q.size();
+                vector<int> level;
+                
+                for (int i = 0; i < length; i++)
+                {
+                    TreeNode* node = q.front();
+                    q.pop();
+                    
+                    level.push_back(node->val);
+                    
+                    if (node->left) 
+                        q.push(node->left);
+                    if (node->right)
+                        q.push(node->right);
+                }
+                ordered.push_back(level);
+            }
+            return ordered;  
+        }
+    };
 //-------------------------------------------------------------
 // 104. Maximum Depth of Binary Tree
     // O(n) time, O(logn) space
@@ -457,6 +584,36 @@
         }
     };
 //-------------------------------------------------------------
+// 152. Maximum Product Subarray
+    // given int array (include negative, 0) find contiguous subarray that has largest product and return product
+    // O(n) time, O(1) space
+
+    class Solution {
+    public:
+        int maxProduct(vector<int>& nums) {
+            int size = nums.size();
+
+            if (!size)
+                return 0;
+            if (size == 1)
+                return nums[0];
+            
+            int runMin = nums[0], runMax = nums[0], totalMax = nums[0];
+            
+            for (int i = 1; i < size; i++)
+            {
+                int currNum = nums[i],
+                    currMin = currNum * runMin,
+                    currMax = currNum * runMax;
+                
+                runMin = min(currNum, min(currMin, currMax));
+                runMax = max(currNum, max(currMin, currMax));
+                
+                totalMax = max(runMax, totalMax);
+            }
+            return totalMax;
+        }
+    };
 //-------------------------------------------------------------
 // 200. Number of Islands
     // O(n * m) time, O(n * m) space

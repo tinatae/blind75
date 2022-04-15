@@ -224,7 +224,7 @@
 //-------------------------------------------------------------
 // 33. Search in a Rotated Sorted Array
     // O(logn) time, O(1) space
-    
+
     class Solution {
     public:
         int search(vector<int>& nums, int target) {
@@ -615,6 +615,34 @@
         }
     };
 //-------------------------------------------------------------
+// 198. House Robber
+    // adjacent houses can't be broken into. return max amount of money can rob without triggering alarm
+    // O(n) time, O(1) space
+
+    class Solution {
+    public:
+        int rob(vector<int>& nums) {
+            int size = nums.size();
+            
+            if (!size) 
+                return 0;
+            if (size == 1) 
+                return nums[0];
+            if (size == 2) 
+                return max(nums[0], nums[1]);
+            
+            int twoBack = nums[0], oneBack = max(twoBack, nums[1]);
+            
+            for (int i = 2; i < size; i++)
+            {
+                int curr = max(twoBack + nums[i], oneBack);
+                twoBack = oneBack;
+                oneBack = curr;
+            }
+            return oneBack; 
+        }
+    };
+//-------------------------------------------------------------
 // 200. Number of Islands
     // O(n * m) time, O(n * m) space
 
@@ -721,6 +749,116 @@
                 curr = next;
             } 
             return prev;    
+        }
+    };
+//-------------------------------------------------------------
+// 208. Implement Trie (Prefix Tree) ..
+
+    struct TrieNode {
+        TrieNode* children[26];
+        bool isEnd;
+        
+        TrieNode() {
+            for (int i = 0; i < 26; i++)
+                children[i] = nullptr;
+
+            isEnd = false;
+        }
+    };
+
+    class Trie {
+    public:
+        TrieNode* root;
+        
+        Trie() {
+            root = new TrieNode();
+        }
+        
+        // O(n) time, O(n) space
+        void insert(string word) {
+            TrieNode* curr = root;
+            
+            for (auto c:word)
+            {
+                int idx = c -'a';
+                
+                if (curr->children[idx] == nullptr)
+                    curr->children[idx] = new TrieNode();
+                
+                curr = curr->children[idx];
+            }
+            curr->isEnd = true;
+        }
+        
+        // O(n) time, O(1) space
+        bool search(string word) {
+            TrieNode* curr = root;
+            
+            for (int i = 0; i < word.size(); i++)
+            {
+                int idx = word[i] - 'a';
+                
+                if (curr->children[idx] == nullptr)
+                    return false;
+                
+                curr = curr->children[idx];
+            }
+            return curr->isEnd; 
+        }
+        
+        // O(n) time, O(1) space
+        bool startsWith(string prefix) {
+            TrieNode* curr = root;
+            
+            for (int i = 0; i < prefix.size(); i++)
+            {
+                int idx = prefix[i] - 'a';
+                
+                if (curr->children[idx] == nullptr)
+                    return false;
+                
+                curr = curr->children[idx];
+            }
+            return true;
+        }
+    };
+//-------------------------------------------------------------
+// 213. House Robber II
+    // houses are arranged in a circle & adjacent houses can't be broken into. 
+    // return max amount of money can rob without triggering alarm
+    // O(n) time, O(1) space
+
+    class Solution {        
+    public:
+        int robCircular(vector<int> &nums, int startIdx, int endIdx) {
+            int twoBack = nums[startIdx],
+                oneBack = max(twoBack, nums[startIdx + 1]);
+            
+            for (int i = startIdx + 2; i <= endIdx; i++)
+            {
+                int curr = max(nums[i] + twoBack, oneBack);
+                twoBack = oneBack;
+                oneBack = curr;
+            }
+            return oneBack;
+        }
+        
+        int rob(vector<int>& nums) {
+            int size = nums.size();
+            
+            if (size == 0)
+                return 0;
+            if (size == 1)
+                return nums[0];
+            if (size == 2)
+                return max(nums[0], nums[1]);
+            if (size == 3)
+                return max(max(nums[0], nums[1]), nums[2]);     // .. Math.max(...nums)
+            
+            int try1 = robCircular(nums, 0, size-2),
+                try2 = robCircular(nums, 1, size-1);
+            
+            return max(try1, try2);
         }
     };
 //-------------------------------------------------------------
@@ -934,6 +1072,63 @@
 //-------------------------------------------------------------
 //-------------------------------------------------------------
 //-------------------------------------------------------------
+// 417. Pacific Atlantic Water Flow
+    // m x n island that borders Pacific & Atlantic Oceans
+    // Pacific touches North, West edge. Atlantic touches South, East edge
+    // given grid of heights representing height above sea level
+    // return 2D list of grid coordinates where rain water flow to both Pacific & Atlantic Oceans
+
+    // O(n * m) time, O(n * m) space
+
+    class Solution {
+    public:
+        int height, width;
+        vector<vector<bool>> pacific, atlantic;
+        
+        void dfs(vector<vector<bool>> &grid, int x, int y, vector<vector<int>> &heights, int prevHeight=INT_MIN) {
+            if (x < 0 || x >= height || y < 0 || y >= width) return;
+            if (grid[x][y] || prevHeight > heights[x][y]) return;
+            
+            grid[x][y] = true;
+            
+            int currHeight = heights[x][y];
+            
+            dfs(grid, x+1, y, heights, currHeight);
+            dfs(grid, x-1, y, heights, currHeight);
+            dfs(grid, x, y+1, heights, currHeight);
+            dfs(grid, x, y-1, heights, currHeight);
+        }
+        
+        vector<vector<int>> pacificAtlantic(vector<vector<int>>& heights) {
+            vector<vector<int>> answer;
+            
+            if (!heights.size()) return answer;
+            
+            height = heights.size(), width = heights[0].size();                     
+            
+            atlantic = pacific = vector<vector<bool>>(height, vector<bool>(width, false));      // initialize 2D grid
+        
+            for (int i = 0; i < height; i++)
+            {
+                dfs(pacific, i, 0, heights);
+                dfs(atlantic, i, width - 1, heights);
+            }
+            
+            for (int i = 0; i < width; i++)
+            {
+                dfs(pacific, 0, i, heights);
+                dfs(atlantic, height-1, i, heights);
+            }
+
+            for (int i = 0; i < height; i++)
+            {
+                for (int j = 0; j < width; j++)
+                    if (pacific[i][j] && atlantic[i][j])
+                        answer.push_back({i, j});
+            }
+            return answer; 
+        }
+    };
 //-------------------------------------------------------------
 //-------------------------------------------------------------
 //-------------------------------------------------------------
